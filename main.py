@@ -987,8 +987,7 @@ class ADBGuiTool:
             for line in sensor_cmd.stdout.split('\n'):
                 if "Sensor " in line or "handle:" in line:
                     sensors.append(line.strip())
-            sensor_info = "\n".join(sensors)
-            info["Sensors"] = sensor_info
+            info["Sensors"] = "\n".join(sensors)
 
             # Create info window
             self.root.update_idletasks()
@@ -1025,26 +1024,59 @@ class ADBGuiTool:
             # Radio tab
             radio_frame = ttk.Frame(notebook, padding="10")
             notebook.add(radio_frame, text="Radio")
-            radio_text = scrolledtext.ScrolledText(radio_frame, height=10, wrap=tk.WORD)
-            radio_text.pack(fill=tk.BOTH, expand=True)
-            radio_text.insert(tk.END, info.get("Radio Info", "No radio info available."))
-            radio_text.config(state=tk.DISABLED)
+            # Organize radio info in a table
+            radio_tree = ttk.Treeview(radio_frame, columns=("key", "value"), show="headings", height=8)
+            radio_tree.heading("key", text="Property")
+            radio_tree.heading("value", text="Value")
+            radio_tree.column("key", width=200)
+            radio_tree.column("value", width=400)
+            radio_tree.pack(fill=tk.BOTH, expand=True)
+            # Parse radio info
+            radio_lines = info.get("Radio Info", "").split("\n")
+            for line in radio_lines:
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    radio_tree.insert("", tk.END, values=(k.strip(), v.strip()))
+                elif line.strip():
+                    radio_tree.insert("", tk.END, values=(line.strip(), ""))
 
             # Thermal tab
             thermal_frame = ttk.Frame(notebook, padding="10")
             notebook.add(thermal_frame, text="Thermal")
-            thermal_text = scrolledtext.ScrolledText(thermal_frame, height=10, wrap=tk.WORD)
-            thermal_text.pack(fill=tk.BOTH, expand=True)
-            thermal_text.insert(tk.END, info.get("Thermal Status", "No thermal info available."))
-            thermal_text.config(state=tk.DISABLED)
+            # Organize thermal info in a table
+            thermal_tree = ttk.Treeview(thermal_frame, columns=("sensor", "value"), show="headings", height=8)
+            thermal_tree.heading("sensor", text="Sensor")
+            thermal_tree.heading("value", text="Value")
+            thermal_tree.column("sensor", width=250)
+            thermal_tree.column("value", width=350)
+            thermal_tree.pack(fill=tk.BOTH, expand=True)
+            # Parse thermal info
+            thermal_lines = info.get("Thermal Status", "").split("\n")
+            for line in thermal_lines:
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    thermal_tree.insert("", tk.END, values=(k.strip(), v.strip()))
+                elif line.strip():
+                    thermal_tree.insert("", tk.END, values=(line.strip(), ""))
 
             # Sensors tab
             sensor_frame = ttk.Frame(notebook, padding="10")
             notebook.add(sensor_frame, text="Sensors")
-            sensor_text = scrolledtext.ScrolledText(sensor_frame, height=15, wrap=tk.WORD)
-            sensor_text.pack(fill=tk.BOTH, expand=True)
-            sensor_text.insert(tk.END, info.get("Sensors", "No sensor info available."))
-            sensor_text.config(state=tk.DISABLED)
+            # Organize sensors in a table
+            sensor_tree = ttk.Treeview(sensor_frame, columns=("name", "handle"), show="headings", height=12)
+            sensor_tree.heading("name", text="Sensor Name/Type")
+            sensor_tree.heading("handle", text="Handle/Details")
+            sensor_tree.column("name", width=350)
+            sensor_tree.column("handle", width=300)
+            sensor_tree.pack(fill=tk.BOTH, expand=True)
+            # Parse sensor info
+            sensor_lines = info.get("Sensors", "").split("\n")
+            for line in sensor_lines:
+                if "handle:" in line:
+                    parts = line.split("handle:")
+                    sensor_tree.insert("", tk.END, values=(parts[0].strip(), "handle:" + parts[1].strip()))
+                else:
+                    sensor_tree.insert("", tk.END, values=(line.strip(), ""))
 
             # Buttons
             button_frame = ttk.Frame(info_window)

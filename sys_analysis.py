@@ -133,20 +133,20 @@ def show_system_logs_aggregator(root, adb_available, connected_device):
             logs = []
             # logcat
             logcat = subprocess.run(["adb", "-s", device, "logcat", "-d", "-v", "time"], capture_output=True, text=True)
-            logs.append("=== Logcat ===\n" + logcat.stdout)
+            logs.append("=== Logcat ===\n" + (logcat.stdout or ""))
             # dmesg
             dmesg = subprocess.run(["adb", "-s", device, "shell", "dmesg"], capture_output=True, text=True)
-            logs.append("\n=== dmesg ===\n" + dmesg.stdout)
+            logs.append("\n=== dmesg ===\n" + (dmesg.stdout or ""))
             # last_kmsg (if available)
             last_kmsg = subprocess.run(["adb", "-s", device, "shell", "cat /proc/last_kmsg"], capture_output=True, text=True)
             if last_kmsg.stdout:
-                logs.append("\n=== last_kmsg ===\n" + last_kmsg.stdout)
+                logs.append("\n=== last_kmsg ===\n" + (last_kmsg.stdout or ""))
             # events log
             events = subprocess.run(["adb", "-s", device, "shell", "logcat -b events -d -v time"], capture_output=True, text=True)
-            logs.append("\n=== Events Log ===\n" + events.stdout)
+            logs.append("\n=== Events Log ===\n" + (events.stdout or ""))
             # radio log
             radio = subprocess.run(["adb", "-s", device, "shell", "logcat -b radio -d -v time"], capture_output=True, text=True)
-            logs.append("\n=== Radio Log ===\n" + radio.stdout)
+            logs.append("\n=== Radio Log ===\n" + (radio.stdout or ""))
             text.config(state=tk.NORMAL)
             text.delete(1.0, tk.END)
             text.insert(tk.END, "\n".join(logs))
